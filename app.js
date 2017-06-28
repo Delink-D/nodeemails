@@ -7,8 +7,8 @@ var nodemailer = require('nodemailer');
 'use strict';
 // // create reusable transporter object using the default SMTP transport
 let transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
+    host: config.email.host,
+    port: config.email.port,
     secure: true, // secure:true for port 465, secure:false for port 587
     auth: {
         user: config.email.emailid,
@@ -27,11 +27,13 @@ var connection = require('nano')({
          }
     }
 });
-var db = connection.use(config.couchdb.dbname); // tell nano to use the db by providing the dbname
+var db = connection.use(config.couchdb.dbname);             // tell nano to use the db of events
+var db_main = connection.use(config.couchdb.dbname_main);   // tell nano to use the db of all douments
 
 // set up repo for events logs
 var NanoRepository = require('nano-repository');
-var repository = new NanoRepository(db);
+var repository = new NanoRepository(db);            // interntiate a nano repository of the events db
+var repository_main = new NanoRepository(db_main);  // interntiate a nano repository of the documents db
 
 // provide the views to the repository for use
 repository.updateViews('./views/views.json', function(error,result) {
@@ -59,13 +61,23 @@ repository.updateViews('./views/views.json', function(error,result) {
                         // send email to nRem email address
                         //console.log("narrative: " + row._id);
 
+                        // find and get the added object from it's database by using its id
+                        repository_main.findById(row.objectId, (err, doc) => {
+                            if (err) {
+                                console.log("Error getting Doc: " + err); // if error show error
+                            }else{
+                                console.log("The doc looks good: " + JSON.stringify(doc));
+
+                            }
+                        });
+
                     }else if(row.type === 'sharelinks' && row.notified === false){
                         // send email to nRem, mediator
                         //console.log("sharelinks: " + row._id);
 
                     }
                 });
-                
+
             }else{
                 // if findByEvent has errors console.log the error
                 console.log(error);
