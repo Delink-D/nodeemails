@@ -1,0 +1,25 @@
+{
+  "name": "nodeemails",
+  "version": "1.0.0",
+  "description": "An application to send email notification Emails",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Nodejs"
+  ],
+  "author": "Delink-D",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3",
+    "nodemailer": "^4.0.1",
+    "body-parser": "^1.17.1",
+    "cors": "^2.8.1",
+    "cradle": "^0.7.1",
+    "fs": "0.0.1-security",
+    "nano": "^6.2.0",
+    "nano-repository": "^1.0.0",
+    "underscore": "^1.8.3"
+  }
+}
