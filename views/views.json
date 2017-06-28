@@ -1,0 +1,13 @@
+{
+  "views": {
+    "all": {
+      "map": "function(doc) {if(doc.type) emit(null, doc)}"
+    },
+    "byType": {
+      "map": "function(doc) {if(doc.type) emit(doc.type, doc)}"
+    },
+    "byEvent": {
+      "map": "function(doc) {if(doc.event) emit(doc.event, doc)}"
+    }
+  }
+}

@@ -32,3 +32,26 @@ var db = connection.use(config.couchdb.dbname); // tell nano to use the db by pr
 // set up repo for events logs
 var NanoRepository = require('nano-repository');
 var repository = new NanoRepository(db);
+
+// provide the views to the repository for use
+repository.updateViews('./views/views.json', function(error,result) {
+    // views are now ready to use
+    if(error){
+        console.log(error);
+    }else{
+        // log out the results
+        console.log(result);
+
+         repository.findByEvent('added', function(error, list) {
+            // list contains all documents where doc.name == ''
+            if (!error) {
+                // if there is no error
+                console.log(list);
+                
+            }else{
+                // if findByEvent has errors console.log the error
+                console.log(error);
+            }
+        }); 
+    }
+});
