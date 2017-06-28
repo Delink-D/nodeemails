@@ -15,3 +15,20 @@ let transporter = nodemailer.createTransport({
         pass: config.email.password
     }
 });
+
+// set up Nano for events logs
+var connection = require('nano')({
+    "url": config.couchdb.serverUrl,
+    "requestDefaults" : {
+        "auth": {
+             "user": config.couchdb.username,
+             "pass": config.couchdb.password,
+             "sendImmediately": true
+         }
+    }
+});
+var db = connection.use(config.couchdb.dbname); // tell nano to use the db by providing the dbname
+
+// set up repo for events logs
+var NanoRepository = require('nano-repository');
+var repository = new NanoRepository(db);
