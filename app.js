@@ -50,9 +50,22 @@ repository.updateViews('./views/views.json', function(error,result) {
 
                 // loop each document with type added
                 list.forEach(function (row) {
-                    console.log(row._id);
-                    
+                    //console.log(row._id);
+
+                    // for different emails notification 
+                    // * check for the type of the event and send notification to specific emails *
+                    // * sending email from info@health-e-net.org
+                    if (row.type === 'patients' && row.notified === false) {
+                        // send email to nRem email address
+                        //console.log("narrative: " + row._id);
+
+                    }else if(row.type === 'sharelinks' && row.notified === false){
+                        // send email to nRem, mediator
+                        //console.log("sharelinks: " + row._id);
+
+                    }
                 });
+                
             }else{
                 // if findByEvent has errors console.log the error
                 console.log(error);
