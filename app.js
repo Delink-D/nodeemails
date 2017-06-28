@@ -48,7 +48,7 @@ repository.updateViews('./views/views.json', function(error,result) {
             // list contains all documents where doc.name == ''
             if (!error) {
                 // if there is no error
-                console.log(list);
+                //console.log(list);
 
                 // loop each document with type added
                 list.forEach(function (row) {
@@ -68,6 +68,26 @@ repository.updateViews('./views/views.json', function(error,result) {
                             }else{
                                 console.log("The doc looks good: " + JSON.stringify(doc));
 
+                                // setup email data with unicode symbols
+                                let mailOptions = {
+                                    from: '"Derick" <ngimwan@gmail.com>', // sender address
+                                    to: 'ngichngimwa@gmail.com', // list of receivers
+                                    subject: 'New Patient Added - ' + doc.firstname + ' ' + doc.firstname, // Subject line
+                                    //text: 'Hello world?', // plain text body
+
+                                    // html body starts..
+                                    html: '<b>Hello,</b> <p>You are receiving this mail because you are the admin.</p>'
+
+                                    // ./html body ends.
+                                };
+
+                                // send mail with defined transport object
+                                transporter.sendMail(mailOptions, (error, info) => {
+                                    if (error) {
+                                        return console.log(error);
+                                    }
+                                    console.log('Message %s sent: %s', info.messageId, info.response);
+                                });
                             }
                         });
 
