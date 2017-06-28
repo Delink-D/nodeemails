@@ -1,7 +1,7 @@
 {
   "name": "nodeemails",
   "version": "1.0.0",
-  "description": "An application to send email notification Emails",
+  "description": "An application to send email notification Emails, when various events are logged into the database. Using couchdb as the database.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
