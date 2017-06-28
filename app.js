@@ -47,7 +47,12 @@ repository.updateViews('./views/views.json', function(error,result) {
             if (!error) {
                 // if there is no error
                 console.log(list);
-                
+
+                // loop each document with type added
+                list.forEach(function (row) {
+                    console.log(row._id);
+                    
+                });
             }else{
                 // if findByEvent has errors console.log the error
                 console.log(error);
