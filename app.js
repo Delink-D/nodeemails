@@ -66,17 +66,25 @@ repository.updateViews('./views/views.json', function(error,result) {
                             if (err) {
                                 console.log("Error getting Doc: " + err); // if error show error
                             }else{
-                                console.log("The doc looks good: " + JSON.stringify(doc));
+                                // console.log("The doc looks good: " + JSON.stringify(doc));
+
+                                var dateAdded = new Date(doc.dateAdded);
 
                                 // setup email data with unicode symbols
                                 let mailOptions = {
                                     from: '"Derick" <ngimwan@gmail.com>', // sender address
                                     to: 'ngichngimwa@gmail.com', // list of receivers
                                     subject: 'New Patient Added - ' + doc.firstname + ' ' + doc.firstname, // Subject line
-                                    //text: 'Hello world?', // plain text body
-
+                                    
                                     // html body starts..
-                                    html: '<b>Hello,</b> <p>You are receiving this mail because you are the admin.</p>'
+                                    html: '<b>Hello,</b> ' +
+                                    '<p>A new patient record has been added as below: </p>' + 
+                                    '<p>First Name: <strong>' + doc.firstname + '</strong></p>' +
+                                    '<p>Gender: <strong>' + doc.sex + '</strong></p>' + 
+                                    '<br><p>The new patient was added by: <strong>' + doc.createdBy + '</strong>' + ' on ' + dateAdded + '</p>' +
+                                    '<p>You may view more information about this patient\'s record by following https://test.gabriel.health-e-net.org/narrative/' + doc._id + '</p>' +
+                                    '<br><p>Sincerely, </p>' + 
+                                    '<p>Health-E-Net Mailer</P>'
 
                                     // ./html body ends.
                                 };
@@ -95,6 +103,50 @@ repository.updateViews('./views/views.json', function(error,result) {
                         // send email to nRem, mediator
                         //console.log("sharelinks: " + row._id);
 
+                        // find and get the added object from it's database by using its id
+                        repository_main.findById(row.objectId, (err, doc) => {
+                            if (err) {
+                                console.log("Error getting Doc: " + err); // if error show error
+                            }else{
+                                // console.log("The doc looks good: " + JSON.stringify(doc));
+
+                                var dateAdded = new Date(doc.dateAdded);
+
+                                repository_main.findById(doc.patientId, (error, patient) => {
+                                    if (error) {
+                                        console.log("Could not get a Patient: " + error);
+                                    }else{
+                                        //console.log("Patient: " + JSON.stringify(patient));
+                                        // setup email data with unicode symbols
+                                        let mailOptions = {
+                                            from: '"Derick" <ngimwan@gmail.com>', // sender address
+                                            to: 'ngichngimwa@gmail.com', // list of receivers
+                                            subject: 'New Sharelink generated', // Subject line
+                                            
+                                            // html body starts..
+                                            html: '<b>Hello,</b> ' +
+                                            '<p>You are receiving this email because a new ShareLink was generated on </p>' + dateAdded +
+                                            '<p>Patient information: </p>' +
+                                            '<p>First Name: <strong>' + patient.firstname + '</strong></p>' +
+                                            '<p>Gender: <strong>' + patient.sex + '</strong></p>' + 
+                                            '<p>You may preview the sharelink by following https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
+                                            '<br><p>Sincerely, </p>' + 
+                                            '<p>Health-E-Net Mailer</P>'
+
+                                            // ./html body ends.
+                                        };
+
+                                        // send mail with defined transport object
+                                        transporter.sendMail(mailOptions, (error, info) => {
+                                            if (error) {
+                                                return console.log(error);
+                                            }
+                                            console.log('Message %s sent: %s', info.messageId, info.response);
+                                        });
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
 
