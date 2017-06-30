@@ -56,7 +56,7 @@ repository.updateViews('./views/views.json', function(error,result) {
 
                     // for different emails notification 
                     // * check for the type of the event and send notification to specific emails *
-                    // * sending email from info@health-e-net.org
+                    // * sending email from info@youremail.com
                     if (row.type === 'patients' && row.notified === false) {
                         // send email to nRem email address
                         //console.log("narrative: " + row._id);
@@ -231,7 +231,7 @@ repository.updateViews('./views/views.json', function(error,result) {
                                             }
                                             console.log('Message %s sent: %s', info.messageId, info.response);
 
-                                        //     // update the notified filed to true
+                                            // update the notified filed to true
                                             var updatedDoc = {
                                                 _id: row._id,
                                                 _rev: row._rev,
