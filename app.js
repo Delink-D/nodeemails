@@ -9,7 +9,7 @@ var nodemailer = require('nodemailer');
 let transporter = nodemailer.createTransport({
     host: config.email.host,
     port: config.email.port,
-    secure: true, // secure:true for port 465, secure:false for port 587
+    secure: config.email.secure, // secure:true for port 465, secure:false for port 587
     auth: {
         user: config.email.emailid,
         pass: config.email.password
@@ -72,8 +72,8 @@ repository.updateViews('./views/views.json', function(error,result) {
 
                                 // setup email data with unicode symbols
                                 let mailOptions = {
-                                    from: '"Derick" <ngimwan@gmail.com>', // sender address
-                                    to: 'ngichngimwa@gmail.com', // list of receivers
+                                    from: '"Derick" <ngichngimwa@gmail.com>', // sender address
+                                    to: 'delinkdeveloper@gmail.com', // list of receivers
                                     subject: 'New Patient Added - ' + doc.firstname + ' ' + doc.firstname, // Subject line
                                     
                                     // html body starts..
@@ -95,6 +95,23 @@ repository.updateViews('./views/views.json', function(error,result) {
                                         return console.log(error);
                                     }
                                     console.log('Message %s sent: %s', info.messageId, info.response);
+
+                                    // update the notified filed to true
+                                    var updatedDoc = {
+                                        _id: row._id,
+                                        _rev: row._rev,
+                                        event: row.event,
+                                        notified: true,
+                                        objectId: row.objectId,
+                                        type: row.type,
+                                        userName: row.userName
+                                    }
+
+                                    repository.save(updatedDoc, (err, res) => {
+                                        if (!err) {
+                                            console.log("doc updated: " + JSON.stringify(res));
+                                        }
+                                    });
                                 });
                             }
                         });
@@ -116,11 +133,11 @@ repository.updateViews('./views/views.json', function(error,result) {
                                     if (error) {
                                         console.log("Could not get a Patient: " + error);
                                     }else{
-                                        //console.log("Patient: " + JSON.stringify(patient));
+                                        // console.log("Patient: " + JSON.stringify(patient));
                                         // setup email data with unicode symbols
                                         let mailOptions = {
-                                            from: '"Derick" <ngimwan@gmail.com>', // sender address
-                                            to: 'ngichngimwa@gmail.com', // list of receivers
+                                            from: '"Derick" <ngichngimwa@gmail.com>', // sender address
+                                            to: 'delinkdeveloper@gmail.com', // list of receivers
                                             subject: 'New Sharelink generated', // Subject line
                                             
                                             // html body starts..
@@ -132,7 +149,6 @@ repository.updateViews('./views/views.json', function(error,result) {
                                             '<p>You may preview the sharelink by following https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
                                             '<br><p>Sincerely, </p>' + 
                                             '<p>Health-E-Net Mailer</P>'
-
                                             // ./html body ends.
                                         };
 
@@ -142,6 +158,95 @@ repository.updateViews('./views/views.json', function(error,result) {
                                                 return console.log(error);
                                             }
                                             console.log('Message %s sent: %s', info.messageId, info.response);
+
+                                            // update the notified filed to true
+                                            var updatedDoc = {
+                                                _id: row._id,
+                                                _rev: row._rev,
+                                                event: row.event,
+                                                notified: true,
+                                                objectId: row.objectId,
+                                                type: row.type,
+                                                userName: row.userName
+                                            }
+
+                                            repository.save(updatedDoc, (err, res) => {
+                                                if (!err) {
+                                                    console.log("Doc updated: " + JSON.stringify(res));
+                                                }
+                                            });
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }else if(row.type === 'report' && row.notified === false){
+                        // send email to nRem, mediator, specialist
+                        //console.log("sharelinks: " + row._id);
+
+                        // find and get the added object from it's database by using its id
+                        repository_main.findById(row.objectId, (err, doc) => {
+                            if (err) {
+                                console.log("Error getting Doc: " + err); // if error show error
+                            }else{
+                                // console.log("The doc looks good: " + JSON.stringify(doc));
+
+                                var dateAdded = new Date(doc.dateAdded);
+
+                                repository_main.findById(doc.patientId, (error, patient) => {
+                                    if (error) {
+                                        console.log("Could not get a Patient: " + error);
+                                    }else{
+                                        // console.log("Patient: " + JSON.stringify(patient));
+                                        // setup email data with unicode symbols
+
+                                        var diff = (new Date() - new Date(patient.dateOfBirth)) // find the difference of age
+                                        var age = Math.floor(diff/31557600000); // Divide by 1000*60*60*24*365.25
+
+                                        console.log(">>"+age);
+                                        // console.log(">> " +dob);
+
+                                        let mailOptions = {
+                                            from: '"Derick" <ngichngimwa@gmail.com>', // sender address
+                                            to: 'delinkdeveloper@gmail.com', // list of receivers
+                                            subject: 'A specilaist report has been uploaded', // Subject line
+                                            
+                                            // html body starts..
+                                            html: '<b>Hello,</b> ' +
+                                            '<p>You are receiving this email because a new specialist report has been published on a case you mediate. </p>' + dateAdded +
+                                            '<p>Case information: </p>' +
+                                            '<p>First Name: <strong>' + patient.firstname + '</strong></p>' +
+                                            '<p>Gender: <strong>' + patient.sex + '</strong></p>' + 
+                                            '<p>Age: <strong>' + age + ' years</strong></p>' + 
+                                            '<p>You may also review the specialist report directly by following the link below https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
+                                            '<br><p>Sincerely, </p>' + 
+                                            '<p>Health-E-Net Mailer</P>'
+                                            // ./html body ends.
+                                        };
+
+                                        // send mail with defined transport object
+                                        transporter.sendMail(mailOptions, (error, info) => {
+                                            if (error) {
+                                                return console.log(error);
+                                            }
+                                            console.log('Message %s sent: %s', info.messageId, info.response);
+
+                                        //     // update the notified filed to true
+                                            var updatedDoc = {
+                                                _id: row._id,
+                                                _rev: row._rev,
+                                                event: row.event,
+                                                notified: true,
+                                                objectId: row.objectId,
+                                                type: row.type,
+                                                userName: row.userName
+                                            }
+
+                                            repository.save(updatedDoc, (err, res) => {
+                                                if (!err) {
+                                                    console.log("Doc updated: " + JSON.stringify(res));
+                                                }
+                                            });
                                         });
                                     }
                                 });
