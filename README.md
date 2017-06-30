@@ -1,14 +1,13 @@
 # nodeemails
 
 Nodejs-Emails: An app that gets data from the database Couchdb and sends an email to the provided address
-=========================================================================================================
 
 ## Requirements
 
 To get started you need nodejs and npm installed in your local machine. to install node follow: 
 [Nodejs](https://nodejs.org/en). npm (node package manager) is installed once the node have been installed
 
-> You need a config file, a json file that holds the database credetials and the email credetials.
+> You need a config file, a json file that holds the database credetials and the email credetials. 
 For a config file, create a folder `config` on the root project and create a file `cpnfig.json` in the folder
 
 example:
@@ -47,14 +46,14 @@ npm install
 
 ## Development server
 
-Run `node app.js` for a server.
+Run `node app.js` for a server. <br>
 You may wish to user other server starts line `nodemon` which you have to install.
-
+<br>
 once the server runs the sending of emails should be executed.
 
 ## Recommended reading
 
-About Nodemailer and how to use [Nodemailer](https://nodemailer.com/about)
-About nodejs [nodejs](https://nodejs.org/en/docs)
-Getting started with Pouchdb [pouchdb](https://pouchdb.com/getting-started.html)
+About Nodemailer and how to use [Nodemailer](https://nodemailer.com/about) <br>
+About nodejs [nodejs](https://nodejs.org/en/docs) <br>
+Getting started with Pouchdb [pouchdb](https://pouchdb.com/getting-started.html) <br>
 Nano documentation [couchdb-nano](https://github.com/apache/couchdb-nano)
