@@ -42,7 +42,7 @@ repository.updateViews('./views/views.json', function(error,result) {
         console.log(error);
     }else{
         // log out the results
-        console.log(result);
+        // console.log(result);
 
          repository.findByEvent('added', function(error, list) {
             // list contains all documents where doc.name == ''
@@ -52,206 +52,23 @@ repository.updateViews('./views/views.json', function(error,result) {
 
                 // loop each document with type added
                 list.forEach(function (row) {
-                    //console.log(row._id);
-
                     // for different emails notification 
                     // * check for the type of the event and send notification to specific emails *
                     // * sending email from info@youremail.com
                     if (row.type === 'patients' && row.notified === false) {
                         // send email to nRem email address
-                        //console.log("narrative: " + row._id);
-
-                        // find and get the added object from it's database by using its id
-                        repository_main.findById(row.objectId, (err, doc) => {
-                            if (err) {
-                                console.log("Error getting Doc: " + err); // if error show error
-                            }else{
-                                // console.log("The doc looks good: " + JSON.stringify(doc));
-
-                                var dateAdded = new Date(doc.dateAdded);
-
-                                // setup email data with unicode symbols
-                                let mailOptions = {
-                                    from: '"Derick" <ngichngimwa@gmail.com>', // sender address
-                                    to: 'delinkdeveloper@gmail.com', // list of receivers
-                                    subject: 'New Patient Added - ' + doc.firstname + ' ' + doc.firstname, // Subject line
-                                    
-                                    // html body starts..
-                                    html: '<b>Hello,</b> ' +
-                                    '<p>A new patient record has been added as below: </p>' + 
-                                    '<p>First Name: <strong>' + doc.firstname + '</strong></p>' +
-                                    '<p>Gender: <strong>' + doc.sex + '</strong></p>' + 
-                                    '<br><p>The new patient was added by: <strong>' + doc.createdBy + '</strong>' + ' on ' + dateAdded + '</p>' +
-                                    '<p>You may view more information about this patient\'s record by following https://test.gabriel.health-e-net.org/narrative/' + doc._id + '</p>' +
-                                    '<br><p>Sincerely, </p>' + 
-                                    '<p>Health-E-Net Mailer</P>'
-
-                                    // ./html body ends.
-                                };
-
-                                // send mail with defined transport object
-                                transporter.sendMail(mailOptions, (error, info) => {
-                                    if (error) {
-                                        return console.log(error);
-                                    }
-                                    console.log('Message %s sent: %s', info.messageId, info.response);
-
-                                    // update the notified filed to true
-                                    var updatedDoc = {
-                                        _id: row._id,
-                                        _rev: row._rev,
-                                        event: row.event,
-                                        notified: true,
-                                        objectId: row.objectId,
-                                        type: row.type,
-                                        userName: row.userName
-                                    }
-
-                                    repository.save(updatedDoc, (err, res) => {
-                                        if (!err) {
-                                            console.log("doc updated: " + JSON.stringify(res));
-                                        }
-                                    });
-                                });
-                            }
-                        });
+                        // call funtion to send notification
+                        notifyOnNewPatient(row);
 
                     }else if(row.type === 'sharelinks' && row.notified === false){
                         // send email to nRem, mediator
-                        //console.log("sharelinks: " + row._id);
-
-                        // find and get the added object from it's database by using its id
-                        repository_main.findById(row.objectId, (err, doc) => {
-                            if (err) {
-                                console.log("Error getting Doc: " + err); // if error show error
-                            }else{
-                                // console.log("The doc looks good: " + JSON.stringify(doc));
-
-                                var dateAdded = new Date(doc.dateAdded);
-
-                                repository_main.findById(doc.patientId, (error, patient) => {
-                                    if (error) {
-                                        console.log("Could not get a Patient: " + error);
-                                    }else{
-                                        // console.log("Patient: " + JSON.stringify(patient));
-                                        // setup email data with unicode symbols
-                                        let mailOptions = {
-                                            from: '"Derick" <ngichngimwa@gmail.com>', // sender address
-                                            to: 'delinkdeveloper@gmail.com', // list of receivers
-                                            subject: 'New Sharelink generated', // Subject line
-                                            
-                                            // html body starts..
-                                            html: '<b>Hello,</b> ' +
-                                            '<p>You are receiving this email because a new ShareLink was generated on </p>' + dateAdded +
-                                            '<p>Patient information: </p>' +
-                                            '<p>First Name: <strong>' + patient.firstname + '</strong></p>' +
-                                            '<p>Gender: <strong>' + patient.sex + '</strong></p>' + 
-                                            '<p>You may preview the sharelink by following https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
-                                            '<br><p>Sincerely, </p>' + 
-                                            '<p>Health-E-Net Mailer</P>'
-                                            // ./html body ends.
-                                        };
-
-                                        // send mail with defined transport object
-                                        transporter.sendMail(mailOptions, (error, info) => {
-                                            if (error) {
-                                                return console.log(error);
-                                            }
-                                            console.log('Message %s sent: %s', info.messageId, info.response);
-
-                                            // update the notified filed to true
-                                            var updatedDoc = {
-                                                _id: row._id,
-                                                _rev: row._rev,
-                                                event: row.event,
-                                                notified: true,
-                                                objectId: row.objectId,
-                                                type: row.type,
-                                                userName: row.userName
-                                            }
-
-                                            repository.save(updatedDoc, (err, res) => {
-                                                if (!err) {
-                                                    console.log("Doc updated: " + JSON.stringify(res));
-                                                }
-                                            });
-                                        });
-                                    }
-                                });
-                            }
-                        });
+                        // call funtion to send notification
+                        notifyOnNewSharelink(row);
+                        
                     }else if(row.type === 'report' && row.notified === false){
                         // send email to nRem, mediator, specialist
-                        //console.log("sharelinks: " + row._id);
-
-                        // find and get the added object from it's database by using its id
-                        repository_main.findById(row.objectId, (err, doc) => {
-                            if (err) {
-                                console.log("Error getting Doc: " + err); // if error show error
-                            }else{
-                                // console.log("The doc looks good: " + JSON.stringify(doc));
-
-                                var dateAdded = new Date(doc.dateAdded);
-
-                                repository_main.findById(doc.patientId, (error, patient) => {
-                                    if (error) {
-                                        console.log("Could not get a Patient: " + error);
-                                    }else{
-                                        // console.log("Patient: " + JSON.stringify(patient));
-                                        // setup email data with unicode symbols
-
-                                        var diff = (new Date() - new Date(patient.dateOfBirth)) // find the difference of age
-                                        var age = Math.floor(diff/31557600000); // Divide by 1000*60*60*24*365.25
-
-                                        console.log(">>"+age);
-                                        // console.log(">> " +dob);
-
-                                        let mailOptions = {
-                                            from: '"Derick" <ngichngimwa@gmail.com>', // sender address
-                                            to: 'delinkdeveloper@gmail.com', // list of receivers
-                                            subject: 'A specilaist report has been uploaded', // Subject line
-                                            
-                                            // html body starts..
-                                            html: '<b>Hello,</b> ' +
-                                            '<p>You are receiving this email because a new specialist report has been published on a case you mediate. </p>' + dateAdded +
-                                            '<p>Case information: </p>' +
-                                            '<p>First Name: <strong>' + patient.firstname + '</strong></p>' +
-                                            '<p>Gender: <strong>' + patient.sex + '</strong></p>' + 
-                                            '<p>Age: <strong>' + age + ' years</strong></p>' + 
-                                            '<p>You may also review the specialist report directly by following the link below https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
-                                            '<br><p>Sincerely, </p>' + 
-                                            '<p>Health-E-Net Mailer</P>'
-                                            // ./html body ends.
-                                        };
-
-                                        // send mail with defined transport object
-                                        transporter.sendMail(mailOptions, (error, info) => {
-                                            if (error) {
-                                                return console.log(error);
-                                            }
-                                            console.log('Message %s sent: %s', info.messageId, info.response);
-
-                                            // update the notified filed to true
-                                            var updatedDoc = {
-                                                _id: row._id,
-                                                _rev: row._rev,
-                                                event: row.event,
-                                                notified: true,
-                                                objectId: row.objectId,
-                                                type: row.type,
-                                                userName: row.userName
-                                            }
-
-                                            repository.save(updatedDoc, (err, res) => {
-                                                if (!err) {
-                                                    console.log("Doc updated: " + JSON.stringify(res));
-                                                }
-                                            });
-                                        });
-                                    }
-                                });
-                            }
-                        });
+                        // call funtion to send notification
+                        notifyOnNewReport(row);
                     }
                 });
 
@@ -262,3 +79,164 @@ repository.updateViews('./views/views.json', function(error,result) {
         }); 
     }
 });
+
+// functions to perform email notification
+// ** notify on new patient **
+function notifyOnNewPatient(row) {
+    // find and get the added object from it's database by using its id
+    repository_main.findById(row.objectId, (err, doc) => {
+        if (err) {
+            console.log("Error getting Doc: " + err); // if error show error
+        }else{
+            // console.log("The doc looks good: " + JSON.stringify(doc));
+
+            var dateAdded = new Date(doc.dateAdded);
+
+            // setup email data with unicode symbols
+            let mailOptions = {
+                from: '"Health-E-Net" <' + config.email.from + '>', // sender address
+                to: config.email.to, // list of receivers
+                subject: 'New Patient Added - ' + doc.firstname + ' ' + doc.firstname, // Subject line
+                
+                // html body starts..
+                html: '<b>Hello,</b> ' +
+                '<p>A new patient record has been added as below: </p>' + 
+                '<p>First Name: <strong>' + doc.firstname + '</strong></p>' +
+                '<p>Gender: <strong>' + doc.sex + '</strong></p>' + 
+                '<br><p>The new patient was added by: <strong>' + doc.createdBy + '</strong>' + ' on ' + dateAdded + '</p>' +
+                '<p>You may view more information about this patient\'s record by following https://test.gabriel.health-e-net.org/narrative/' + doc._id + '</p>' +
+                '<br><p>Sincerely, </p>' + 
+                '<p>Health-E-Net Mailer</P>'
+
+                // ./html body ends.
+            };
+
+            // call funtion to send the email
+            sendEmail(mailOptions, row);
+        }
+    });
+}
+
+// ** notify on new sharelink genarated **
+function notifyOnNewSharelink(row){
+    // find and get the added object from it's database by using its id
+    repository_main.findById(row.objectId, (err, doc) => {
+        if (err) {
+            console.log("Error getting Doc: " + err); // if error show error
+        }else{
+            // console.log("The doc looks good: " + JSON.stringify(doc));
+
+            var dateAdded = new Date(doc.dateAdded);
+
+            repository_main.findById(doc.patientId, (error, patient) => {
+                if (error) {
+                    console.log("Could not get a Patient: " + error);
+                }else{
+                    // console.log("Patient: " + JSON.stringify(patient));
+                    // setup email data with unicode symbols
+                    let mailOptions = {
+                        from: '"Health-E-Net" <' + config.email.from + '>', // sender address
+                        to: config.email.to, // list of receivers
+                        subject: 'New Sharelink generated', // Subject line
+                        
+                        // html body starts..
+                        html: '<b>Hello,</b> ' +
+                        '<p>You are receiving this email because a new ShareLink was generated on </p>' + dateAdded +
+                        '<p>Patient information: </p>' +
+                        '<p>First Name: <strong>' + patient.firstname + '</strong></p>' +
+                        '<p>Gender: <strong>' + patient.sex + '</strong></p>' + 
+                        '<p>You may preview the sharelink by following https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
+                        '<br><p>Sincerely, </p>' + 
+                        '<p>Health-E-Net Mailer</P>'
+                        // ./html body ends.
+                    };
+
+                    // call funtion to send the email
+                    sendEmail(mailOptions, row);
+                }
+            });
+        }
+    });
+}
+
+// ** notify on new report published **
+function notifyOnNewReport(row){
+    // find and get the added object from it's database by using its id
+    repository_main.findById(row.objectId, (err, doc) => {
+        if (err) {
+            console.log("Error getting Doc: " + err); // if error show error
+        }else{
+            // console.log("The doc looks good: " + JSON.stringify(doc));
+
+            var dateAdded = new Date(doc.dateAdded);
+
+            repository_main.findById(doc.patientId, (error, patient) => {
+                if (error) {
+                    console.log("Could not get a Patient: " + error);
+                }else{
+                    // console.log("Patient: " + JSON.stringify(patient));
+                    // setup email data with unicode symbols
+
+                    var diff = (new Date() - new Date(patient.dateOfBirth)) // find the difference of age
+                    var age = Math.floor(diff/31557600000); // Divide by 1000*60*60*24*365.25
+
+                    let mailOptions = {
+                        from: '"Health-E-Net" <' + config.email.from + '>', // sender address
+                        to: config.email.to, // list of receivers
+                        subject: 'A specilaist report has been uploaded', // Subject line
+                        
+                        // html body starts..
+                        html: '<b>Hello,</b> ' +
+                        '<p>You are receiving this email because a new specialist report has been published on a case you mediate. </p>' + dateAdded +
+                        '<p>Case information: </p>' +
+                        '<p>First Name: <strong>' + patient.firstname + '</strong></p>' +
+                        '<p>Gender: <strong>' + patient.sex + '</strong></p>' + 
+                        '<p>Age: <strong>' + age + ' years</strong></p>' + 
+                        '<p>You may also review the specialist report directly by following the link below https://test.gabriel.health-e-net.org/shared/' + doc._id + '</p>' +
+                        '<br><p>Sincerely, </p>' + 
+                        '<p>Health-E-Net Mailer</P>'
+                        // ./html body ends.
+                    };
+
+                    // call funtion to send the email
+                    sendEmail(mailOptions, row);
+                }
+            });
+        }
+    });
+}
+
+// send email function
+function sendEmail(mailOptions, row) {
+   // send mail with defined transport object
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Message %s sent: %s', info.messageId, info.response);
+
+        // call a function to update the documnt
+        updateDocument(row);
+    });
+}
+
+// update the notified fild to true
+function updateDocument(row) {
+    // preparing the document to be updated
+    var updatedDoc = {
+        _id: row._id,
+        _rev: row._rev,
+        event: row.event,
+        notified: true,
+        objectId: row.objectId,
+        type: row.type,
+        userName: row.userName
+    }
+
+    // repository method to save and update the document
+    repository.save(updatedDoc, (err, res) => {
+        if (!err) {
+            console.log("Doc updated: " + JSON.stringify(res));
+        }
+    });
+}

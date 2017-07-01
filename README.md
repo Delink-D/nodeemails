@@ -21,10 +21,12 @@ example:
   },
   "email": {
     "host": "smtp.gmail.com",
-    "port": 587,
-    "secure": false,
+    "port": 465,
+    "secure": true, // secure:true for port 465, secure:false for port 587
   	"emailid": "example@gmail.com",
-  	"password": "password"
+  	"password": "password",
+  	"from": "example@gmail.com",
+    "to": "receiver@gmail.com"
   }
 }
 ```
